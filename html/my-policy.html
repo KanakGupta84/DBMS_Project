@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>My Policy | InsureWise</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@200;300;400&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="../css/global.css"/>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col">
+    <div id="global-header"></div>
+
+    <main class="flex-grow max-w-[1200px] mx-auto px-6 lg:px-10 py-8">
+        <!-- Page Heading -->
+        <div class="mb-10 fade-in-up">
+            <nav class="flex items-center space-x-2 text-xs font-bold text-slate-400 mb-3">
+                <a href="dashboard.html" class="hover:text-slate-600 transition-colors">Dashboard</a>
+                <span class="material-symbols-outlined text-sm">chevron_right</span>
+                <a href="my-policies.html" class="hover:text-slate-600 transition-colors">My Policies</a>
+                <span class="material-symbols-outlined text-sm">chevron_right</span>
+                <span class="text-slate-600">Policy Details</span>
+            </nav>
+            <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+                <div>
+                    <h1 id="mp-title" class="text-3xl font-bold mb-1 tracking-tight text-slate-900">—</h1>
+                    <p class="text-slate-500 text-sm font-medium">Policy No: <span id="mp-policy-no" class="font-bold text-slate-900">—</span></p>
+                </div>
+                <span id="mp-status" class="self-start md:self-end bg-green-50 text-green-700 text-[9px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-md border border-green-100">—</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 fade-in-up" style="animation-delay: 0.1s;">
+            <!-- Left Column -->
+            <div class="lg:col-span-8 space-y-8">
+
+                <!-- Policy Overview Stats -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="animated-card bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Sum Insured</p>
+                        <p id="mp-sum" class="text-xl font-bold text-slate-900">—</p>
+                    </div>
+                    <div class="animated-card bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Network</p>
+                        <p id="mp-network" class="text-xl font-bold text-slate-900">—</p>
+                    </div>
+                    <div class="animated-card bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Coverage For</p>
+                        <p id="mp-coverage-for" class="text-xl font-bold text-slate-900">—</p>
+                    </div>
+                    <div class="animated-card bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Policy Expiry</p>
+                        <p id="mp-expiry" class="text-xl font-bold text-slate-900">—</p>
+                    </div>
+                </div>
+
+                <!-- Plan Description -->
+                <section class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+                    <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">Plan Description</h2>
+                    <p id="mp-description" class="text-slate-600 text-sm leading-relaxed">—</p>
+                </section>
+            </div>
+
+            <!-- Right Sidebar -->
+            <div class="lg:col-span-4 space-y-8">
+
+                <!-- Premium Payment Card -->
+                <div class="animated-card bg-slate-900 rounded-xl p-6 shadow-lg relative overflow-hidden">
+                    <div class="absolute -right-8 -bottom-8 w-32 h-32 bg-white opacity-5 rounded-full"></div>
+                    <h3 class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-5">Premium Details</h3>
+                    <div class="space-y-4 relative z-10">
+                        <div>
+                            <p class="text-xs text-slate-400 mb-1">Monthly Premium</p>
+                            <p id="mp-last-premium" class="text-2xl font-bold text-white">—</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400 mb-1">Next Due Date</p>
+                            <p id="mp-next-due" class="text-sm font-bold text-white">—</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400 mb-1">Payment Frequency</p>
+                            <p id="mp-pay-freq" class="text-sm font-bold text-white">—</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-auto py-4 border-t border-slate-200">
+        <div class="max-w-[1200px] mx-auto px-6 lg:px-10 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p class="text-[10px] uppercase tracking-widest text-slate-400 font-bold">© 2024 InsureWise Financial Group</p>
+            <div class="flex gap-6">
+                <a class="text-[10px] uppercase tracking-widest text-slate-400 hover:text-slate-900 font-bold" href="#">Privacy</a>
+                <a class="text-[10px] uppercase tracking-widest text-slate-400 hover:text-slate-900 font-bold" href="#">Terms</a>
+                <a class="text-[10px] uppercase tracking-widest text-slate-400 hover:text-slate-900 font-bold" href="#">Security</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/global.js"></script>
+    <script src="../js/my-policy.js"></script>
+</body>
+</html>

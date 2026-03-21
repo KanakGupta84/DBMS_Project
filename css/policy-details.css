@@ -1,0 +1,18 @@
+/* Custom transitions for policy details */
+.hover-lift { 
+    transition: transform 0.2s ease, box-shadow 0.2s ease; 
+}
+.hover-lift:hover { 
+    transform: translateY(-2px); 
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); 
+}
+
+/* Timeline specific styling */
+.timeline-line {
+    position: absolute;
+    left: 31px;
+    top: 24px;
+    bottom: 24px;
+    width: 2px;
+    background-color: #f1f5f9;
+}

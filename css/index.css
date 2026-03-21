@@ -1,0 +1,10 @@
+/* Custom gradients and layout specific to the dashboard */
+.bg-gradient-premium {
+    background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+}
+.card-gradient {
+    background: linear-gradient(145deg, rgba(255,255,255,1) 0%, rgba(248,250,252,1) 100%);
+}
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 20;
+}

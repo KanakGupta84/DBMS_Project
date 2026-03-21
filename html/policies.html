@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Policy Discovery | InsureWise</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@200;300;400&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="../css/global.css"/>
+    <link rel="stylesheet" href="../css/policies.css"/>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col">
+    <div id="global-header"></div>
+    
+    <!-- Hero Search -->
+    <section class="py-6">
+        <div class="max-w-7xl mx-auto px-6 fade-in-up">
+            <h1 class="text-3xl font-extrabold text-slate-900 mb-2">Policy Discovery</h1>
+            <p class="text-slate-500 font-medium">Compare and discover coverage tailored to your needs.</p>
+        </div>
+    </section>
+
+    <main class="flex-grow max-w-7xl mx-auto px-6 py-8 flex gap-8">
+        <!-- Filter Sidebar -->
+        <aside class="w-64 flex-shrink-0 space-y-8 fade-in-up hidden md:block" style="animation-delay: 0.1s;">
+            <div>
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Policy Type</h3>
+                <div class="space-y-3">
+                    <label class="flex items-center group cursor-pointer">
+                        <input checked class="rounded border-slate-300 text-slate-900 focus:ring-slate-900" type="checkbox"/>
+                        <span class="ml-3 text-sm text-slate-600 font-medium group-hover:text-slate-900 transition-colors">All Categories</span>
+                    </label>
+                    <label class="flex items-center group cursor-pointer">
+                        <input class="rounded border-slate-300 text-slate-900 focus:ring-slate-900" type="checkbox"/>
+                        <span class="ml-3 text-sm text-slate-600 font-medium group-hover:text-slate-900 transition-colors">Health Insurance</span>
+                    </label>
+                    <label class="flex items-center group cursor-pointer">
+                        <input class="rounded border-slate-300 text-slate-900 focus:ring-slate-900" type="checkbox"/>
+                        <span class="ml-3 text-sm text-slate-600 font-medium group-hover:text-slate-900 transition-colors">Motor Protection</span>
+                    </label>
+                    <label class="flex items-center group cursor-pointer">
+                        <input class="rounded border-slate-300 text-slate-900 focus:ring-slate-900" type="checkbox"/>
+                        <span class="ml-3 text-sm text-slate-600 font-medium group-hover:text-slate-900 transition-colors">Life & Term</span>
+                    </label>
+                </div>
+            </div>
+
+
+            <div class="pt-6 border-t border-slate-200">
+                <button class="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-900 text-sm font-bold rounded-xl transition-all shadow-sm">Reset Filters</button>
+            </div>
+        </aside>
+
+        <!-- Marketplace Grid -->
+        <section class="flex-grow">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4 fade-in-up" style="animation-delay: 0.1s;">
+                <span class="text-sm text-slate-500 font-medium"><span id="policies-count" class="font-extrabold text-slate-900 text-base">0</span> policies found for your criteria</span>
+            </div>
+
+            <div id="policies-grid" class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                <!-- Dynamically populated by JS -->
+            </div>
+            
+            <!-- Pagination -->
+            <div id="pagination-container" class="mt-12 flex justify-center items-center space-x-2 pb-12 fade-in-up" style="animation-delay: 0.4s;">
+                <!-- Dynamically populated by JS -->
+            </div>
+        </section>
+    </main>
+    <!-- Purchase Modal -->
+    <div id="purchase-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-slate-200">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-lg font-extrabold text-slate-900 uppercase tracking-wider" id="modal-title">Purchase Plan</h2>
+                    <button onclick="closeModal()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors">
+                        <span class="material-symbols-outlined text-slate-400">close</span>
+                    </button>
+                </div>
+                <p id="modal-subtitle" class="text-xs text-slate-500 mt-1 font-medium"></p>
+            </div>
+            <form id="purchase-form" class="p-6 space-y-4">
+                <input type="hidden" id="modal-plan-id" />
+                <input type="hidden" id="modal-plan-type" />
+
+                <!-- Health Fields -->
+                <div id="health-fields" class="hidden space-y-4">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Patient Full Name *</label>
+                        <input type="text" id="patient_name" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none" placeholder="e.g., John Doe" />
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Date of Birth *</label>
+                            <input type="date" id="date_of_birth" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none" />
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Blood Group *</label>
+                            <select id="blood_group" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none">
+                                <option value="">Select</option>
+                                <option>A+</option><option>A-</option>
+                                <option>B+</option><option>B-</option>
+                                <option>AB+</option><option>AB-</option>
+                                <option>O+</option><option>O-</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Pre-existing Conditions</label>
+                        <textarea id="pre_existing_conditions" rows="2" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none" placeholder="e.g., Diabetes, Asthma (or leave blank)"></textarea>
+                    </div>
+                </div>
+
+                <!-- Motor Fields -->
+                <div id="motor-fields" class="hidden space-y-4">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Vehicle Registration Number *</label>
+                        <input type="text" id="vehicle_number" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none uppercase" placeholder="e.g., DL-01-AB-1234" />
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Vehicle Model *</label>
+                            <input type="text" id="vehicle_model" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none" placeholder="e.g., Honda City 2021" />
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Registration Year *</label>
+                            <input type="number" id="registration_year" required min="1990" max="2030" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none" placeholder="e.g., 2021" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Life Fields -->
+                <div id="life-fields" class="hidden space-y-4">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Nominee Full Name *</label>
+                        <input type="text" id="nominee_name" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none" placeholder="e.g., Jane Doe" />
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Relation *</label>
+                            <select id="nominee_relation" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none">
+                                <option value="">Select</option>
+                                <option value="spouse">Spouse</option>
+                                <option value="parent">Parent</option>
+                                <option value="child">Child</option>
+                                <option value="sibling">Sibling</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Nominee DOB *</label>
+                            <input type="date" id="nominee_dob" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none" />
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" id="modal-submit-btn" class="w-full py-3 bg-slate-900 text-white text-sm font-extrabold uppercase tracking-wider rounded-xl shadow-lg hover:bg-slate-800 transition-all mt-2">
+                    Confirm Purchase
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Policy Detail / Reviews Modal -->
+    <div id="detail-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-slate-200 flex justify-between items-start">
+                <div>
+                    <h2 id="detail-modal-title" class="text-lg font-extrabold text-slate-900"></h2>
+                    <p id="detail-modal-provider" class="text-xs text-slate-500 font-medium mt-0.5"></p>
+                </div>
+                <button onclick="closeDetailModal()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors flex-shrink-0">
+                    <span class="material-symbols-outlined text-slate-400">close</span>
+                </button>
+            </div>
+            <div class="px-6 pt-5 pb-4 border-b border-slate-100 flex items-center gap-5">
+                <p id="detail-avg-rating" class="text-5xl font-extrabold text-slate-900">—</p>
+                <div>
+                    <div id="detail-stars" class="flex gap-0.5 mb-1"></div>
+                    <p id="detail-review-count" class="text-xs text-slate-400 font-bold uppercase tracking-widest"></p>
+                </div>
+            </div>
+            <div id="detail-reviews-list" class="p-6 space-y-4 min-h-[100px]">
+                <p class="text-slate-400 text-sm text-center py-4">Loading reviews...</p>
+            </div>
+            <div class="px-6 pb-6 flex gap-3">
+                <a id="detail-leave-review-btn" href="#" class="flex-1 py-3 bg-slate-100 text-slate-900 text-sm font-extrabold rounded-xl text-center hover:bg-slate-200 transition-all">Leave a Review</a>
+                <button id="detail-select-plan-btn" class="flex-1 py-3 bg-slate-900 text-white text-sm font-extrabold rounded-xl hover:bg-slate-800 transition-all">Select Plan</button>
+            </div>
+        </div>
+    </div>
+
+  <div class="max-w-7xl mx-auto w-full px-6 py-4 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4">
+    <p class="text-[10px] uppercase tracking-widest text-slate-400 font-bold">
+      © 2023 InsureWise Financial Group
+    </p>
+    <div class="flex gap-6">
+      <a class="text-[10px] uppercase tracking-widest text-slate-400 hover:text-slate-900 font-bold" href="#">Privacy</a>
+      <a class="text-[10px] uppercase tracking-widest text-slate-400 hover:text-slate-900 font-bold" href="#">Terms</a>
+      <a class="text-[10px] uppercase tracking-widest text-slate-400 hover:text-slate-900 font-bold" href="#">Security</a>
+    </div>
+  </div>
+</footer>
+
+    <script src="../js/global.js"></script>
+    <script src="../js/policies.js"></script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --primary: #0F172A;
+  --bg-color: #F8FAFC;
+  --text-primary: #1E293B;
+  --text-secondary: #64748B;
+  --transition-speed: 0.3s;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Base Interactions & Animations */
+button, a {
+  transition: all var(--transition-speed) ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+/* Card Hover Animations */
+.animated-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.animated-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+}
+
+/* Global Navigation Header Styling */
+.unified-header {
+  background-color: #ffffff;
+  border-bottom: 1px solid #E2E8F0;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(8px);
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+.unified-header .nav-link {
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 0.875rem;
+  padding: 1.25rem 0;
+  border-bottom: 2px solid transparent;
+  display: inline-block;
+  transform: translateY(1px);
+}
+
+.unified-header .nav-link:hover {
+  color: var(--text-primary);
+}
+
+.unified-header .nav-link.active {
+  color: var(--text-primary);
+  font-weight: 700;
+  border-bottom-color: var(--primary);
+}
+
+/* Entry Animation */
+.fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

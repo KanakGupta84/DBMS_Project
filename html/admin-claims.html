@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Admin Portal - Claims | InsureWise</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@200;300;400&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="../css/global.css"/>
+    <style>
+        body {
+            background-color: #f8fafc;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Admin Header -->
+    <div id="global-header"></div>
+
+    <!-- Main Content -->
+    <main class="flex-1 max-w-[1400px] w-full mx-auto px-6 lg:px-10 py-8">
+        <!-- Dashboard Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 fade-in-up">
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Total Pending</p>
+                    <p id="stat-pending" class="text-2xl font-bold text-slate-900">—</p>
+                </div>
+                <div class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center">
+                    <span class="material-symbols-outlined text-slate-900">pending_actions</span>
+                </div>
+            </div>
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Approved Today</p>
+                    <p id="stat-approved" class="text-2xl font-bold text-slate-900">—</p>
+                </div>
+                <div class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center">
+                    <span class="material-symbols-outlined text-slate-900">check_circle</span>
+                </div>
+            </div>
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Declined Today</p>
+                    <p id="stat-declined" class="text-2xl font-bold text-slate-900">—</p>
+                </div>
+                <div class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center">
+                    <span class="material-symbols-outlined text-slate-900">cancel</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Claims Table -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden fade-in-up" style="animation-delay: 0.1s;">
+            <div class="px-6 py-5 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
+                <h2 class="text-sm font-bold uppercase tracking-widest text-slate-900">Claim Queue Management</h2>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse" id="claims-table">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500">
+                            <th class="px-6 py-4 font-bold">Claim ID</th>
+                            <th class="px-6 py-4 font-bold">Applicant</th>
+                            <th class="px-6 py-4 font-bold">Type</th>
+                            <th class="px-6 py-4 font-bold">Submitted</th>
+                            <th class="px-6 py-4 font-bold text-right">Amount (₹)</th>
+                            <th class="px-6 py-4 font-bold text-center">Status</th>
+                            <th class="px-6 py-4 font-bold text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-claims-body" class="text-sm">
+                        <!-- Dynamic rows loaded via JS -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="px-6 py-4 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500 font-medium">
+                <span>Showing 1 to 4 of 12 claims</span>
+                <div class="flex gap-1">
+                    <button class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-400 cursor-not-allowed hidden md:flex"><span class="material-symbols-outlined text-sm">chevron_left</span></button>
+                    <button class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-900 text-white font-bold">1</button>
+                    <button class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 hover:bg-slate-50">2</button>
+                    <button class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 hover:bg-slate-50">3</button>
+                    <button class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 hover:bg-slate-50 hidden md:flex"><span class="material-symbols-outlined text-sm">chevron_right</span></button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Admin Footer -->
+    <footer class="py-4 px-6 lg:px-10 border-t border-slate-200 mt-auto bg-slate-100">
+        <div class="max-w-[1400px] mx-auto flex justify-between items-center text-[10px] uppercase font-bold tracking-widest text-slate-400">
+            <p>Admin Control Panel</p>
+            <p>Secure Connection Setup</p>
+        </div>
+    </footer>
+
+    <script src="../js/global.js"></script>
+    <script src="../js/admin-claims.js"></script>
+</body>
+</html>

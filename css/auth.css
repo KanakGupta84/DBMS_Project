@@ -1,0 +1,83 @@
+/* Auth Page Layout */
+.auth-split {
+    display: flex;
+    min-height: 100vh;
+}
+
+.auth-sidebar {
+    background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+    color: white;
+    width: 40%;
+    padding: 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.auth-form-container {
+    width: 60%;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+@media (max-width: 768px) {
+    .auth-split {
+        flex-direction: column;
+    }
+    .auth-sidebar {
+        width: 100%;
+        padding: 2rem;
+        min-height: 300px;
+    }
+    .auth-form-container {
+        width: 100%;
+        padding: 2rem 1rem;
+    }
+}
+
+/* Floating label inputs */
+.floating-input-group {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.floating-input {
+    width: 100%;
+    padding: 1rem 1rem 0.5rem 1rem;
+    font-size: 1rem;
+    color: var(--text-primary);
+    background-color: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 0.5rem;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.floating-input:focus {
+    border-color: var(--primary);
+    background-color: white;
+    box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.1);
+}
+
+.floating-label {
+    position: absolute;
+    top: 50%;
+    left: 1rem;
+    transform: translateY(-50%);
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+    pointer-events: none;
+    font-weight: 500;
+}
+
+.floating-input:focus + .floating-label,
+.floating-input:not(:placeholder-shown) + .floating-label {
+    top: 0.5rem;
+    font-size: 0.65rem;
+    color: var(--primary);
+    font-weight: 700;
+}

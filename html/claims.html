@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>My Claims | InsureWise</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@200;300;400&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="../css/global.css"/>
+    <link rel="stylesheet" href="../css/claims.css"/>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col">
+    <div id="global-header"></div>
+    
+    <main class="max-w-[1200px] mx-auto w-full px-6 py-8 flex-grow">
+        <!-- PageHeading -->
+        <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4 fade-in-up">
+            <div>
+                <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Claims Registry</h1>
+                <p class="text-slate-500 mt-1 font-medium">Manage and track your active and historical insurance claims.</p>
+            </div>
+        </div>
+
+        <!-- MetricCards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="animated-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Claims</p>
+                <div class="flex items-baseline gap-2 mt-3">
+                    <span id="stat-total-claims" class="text-3xl font-extrabold text-slate-900">—</span>
+                </div>
+            </div>
+            
+            <div class="animated-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pending Payout</p>
+                <div class="flex items-baseline gap-2 mt-3">
+                    <span id="stat-pending-amount" class="text-3xl font-extrabold text-slate-900">—</span>
+                    <span id="stat-pending-count" class="text-xs text-amber-600 font-bold bg-amber-50 px-2 py-0.5 rounded-md"></span>
+                </div>
+            </div>
+            
+            <div class="animated-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Approved (YTD)</p>
+                <div class="flex items-baseline gap-2 mt-3">
+                    <span id="stat-approved-amount" class="text-3xl font-extrabold text-slate-900">—</span>
+                </div>
+            </div>
+            
+            <div class="animated-card bg-slate-900 p-6 rounded-2xl shadow-lg shadow-slate-900/10 flex flex-col justify-center border border-slate-800">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center mb-3">Need Assistance?</p>
+                <button onclick="window.location.href='new-claim.html'" class="w-full py-3 bg-white text-slate-900 rounded-xl text-sm font-extrabold shadow-sm hover:bg-slate-50 transition-colors">
+                    START NEW CLAIM
+                </button>
+            </div>
+        </div>
+
+        <!-- ClaimsTableContainer -->
+        <section class="animated-card bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden fade-in-up" style="animation-delay: 0.2s;">
+            <div class="px-6 py-5 border-b border-slate-200 bg-slate-50/50 flex items-center justify-between">
+                <h2 class="text-sm font-extrabold uppercase tracking-wide text-slate-700">Recent Filings</h2>
+            </div>
+            
+            <div class="overflow-x-auto thin-scrollbar pb-2">
+                <table class="w-full text-left border-collapse min-w-[800px]">
+                    <thead>
+                        <tr class="bg-white text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-200">
+                            <th class="px-6 py-5 w-[20%]">Claim ID</th>
+                            <th class="px-6 py-5 w-[15%]">Filing Date</th>
+                            <th class="px-6 py-5 w-[25%]">Policy Type</th>
+                            <th class="px-6 py-5 w-[15%] text-left">Status</th>
+                            <th class="px-6 py-5 w-[15%] text-right">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody id="claims-table-body" class="divide-y divide-slate-100 text-sm">
+                        <!-- Dynamic Rows Here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer class="mt-auto">
+  <div class="max-w-7xl mx-auto w-full px-6 py-4 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4">
+    <p class="text-[10px] uppercase tracking-widest text-slate-400 font-bold">
+      © 2023 InsureWise Financial Group
+    </p>
+    <div class="flex gap-6">
+      <a class="text-[10px] uppercase tracking-widest text-slate-400 hover:text-slate-900 font-bold" href="#">Privacy</a>
+      <a class="text-[10px] uppercase tracking-widest text-slate-400 hover:text-slate-900 font-bold" href="#">Terms</a>
+      <a class="text-[10px] uppercase tracking-widest text-slate-400 hover:text-slate-900 font-bold" href="#">Security</a>
+    </div>
+  </div>
+</footer>
+
+    <script src="../js/global.js"></script>
+    <script src="../js/claims.js"></script>
+</body>
+</html>

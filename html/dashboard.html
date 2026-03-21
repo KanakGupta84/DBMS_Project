@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>InsureWise - Premium Dashboard</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@200;300;400&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="../css/global.css"/>
+    <link rel="stylesheet" href="../css/index.css"/>
+</head>
+<body class="bg-gradient-premium min-h-screen">
+    <div id="global-header"></div>
+    
+    <div class="max-w-[1200px] mx-auto px-6 lg:px-10 py-8 fade-in-up">
+        <main>
+            <!-- Welcome & Search -->
+            <div class="mb-10 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+                <div>
+                    <h1 class="text-3xl font-bold mb-1 tracking-tight text-slate-900">Welcome back, <span id="dash-username">...</span></h1>
+                    <p class="text-slate-500 text-sm">Your protection summary as of today.</p>
+                </div>
+            </div>
+
+            <!-- Browse Categories -->
+            <section class="mb-12">
+                <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-6">Insurance Categories</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div onclick="window.location.href='policies.html'" class="category-card animated-card flex items-center justify-center gap-4 py-8 px-6 card-gradient rounded-xl border border-slate-200 hover:border-slate-400 cursor-pointer shadow-sm">
+                        <span class="material-symbols-outlined text-3xl text-slate-400">medical_services</span>
+                        <span class="text-sm font-bold uppercase tracking-wider text-slate-800">Health Insurance</span>
+                    </div>
+                    <div onclick="window.location.href='policies.html'" class="category-card animated-card flex items-center justify-center gap-4 py-8 px-6 card-gradient rounded-xl border border-slate-200 hover:border-slate-400 cursor-pointer shadow-sm">
+                        <span class="material-symbols-outlined text-3xl text-slate-400">directions_car</span>
+                        <span class="text-sm font-bold uppercase tracking-wider text-slate-800">Motor Insurance</span>
+                    </div>
+                    <div onclick="window.location.href='policies.html'" class="category-card animated-card flex items-center justify-center gap-4 py-8 px-6 card-gradient rounded-xl border border-slate-200 hover:border-slate-400 cursor-pointer shadow-sm">
+                        <span class="material-symbols-outlined text-3xl text-slate-400">family_restroom</span>
+                        <span class="text-sm font-bold uppercase tracking-wider text-slate-800">Life Insurance</span>
+                    </div>
+                </div>
+            </section>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                <!-- Left Content: Policies & Claims -->
+                <div class="lg:col-span-8 space-y-10">
+                    <section>
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400">Current Policies</h2>
+                            <button onclick="window.location.href='my-policies.html'" class="text-slate-900 text-[10px] font-bold uppercase tracking-wider hover:underline transition-all">View All</button>
+                        </div>
+                        <div id="dash-policies-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- Dynamic policy cards -->
+                        </div>
+                    </section>
+
+                    <section>
+                        <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">Active Claims</h2>
+                        <div id="dash-claims-container">
+                            <!-- Dynamic claims -->
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Right Sidebar -->
+                <div class="lg:col-span-4 space-y-8">
+                </div>
+            </div>
+        </main>
+
+        <footer class="mt-8 py-4 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p class="text-[10px] uppercase tracking-widest text-slate-400 font-bold">© 2023 InsureWise Financial Group</p>
+            <div class="flex gap-6">
+                <a class="text-[10px] uppercase tracking-widest text-slate-400 hover:text-slate-900 font-bold" href="#">Privacy</a>
+                <a class="text-[10px] uppercase tracking-widest text-slate-400 hover:text-slate-900 font-bold" href="#">Terms</a>
+                <a class="text-[10px] uppercase tracking-widest text-slate-400 hover:text-slate-900 font-bold" href="#">Security</a>
+            </div>
+        </footer>
+    </div>
+
+    <script src="../js/global.js"></script>
+    <script src="../js/index.js"></script>
+</body>
+</html>
