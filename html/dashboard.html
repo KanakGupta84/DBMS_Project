@@ -64,6 +64,25 @@
 
                 <!-- Right Sidebar -->
                 <div class="lg:col-span-4 space-y-8">
+                    <!-- Nominee Section -->
+                    <section class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                        <div class="flex items-center gap-3 mb-4 text-violet-600">
+                            <div class="w-10 h-10 bg-violet-50 rounded-lg flex items-center justify-center">
+                                <span class="material-symbols-outlined text-xl">family_restroom</span>
+                            </div>
+                            <div>
+                                <h2 class="text-sm font-bold uppercase tracking-widest text-slate-900">Nominee Status</h2>
+                                <p class="text-[11px] text-slate-500 font-medium">Life policies where you are declared</p>
+                            </div>
+                        </div>
+                        <div id="dash-nominee-summary" class="mb-5">
+                            <!-- Populated by JS -->
+                            <p class="text-2xl font-black text-slate-900 tracking-tight">0 <span class="text-sm text-slate-500 font-medium tracking-normal">policies</span></p>
+                        </div>
+                        <button onclick="document.getElementById('nominee-modal').classList.remove('hidden')" class="w-full bg-slate-900 text-white text-xs font-bold uppercase tracking-wider py-3 rounded-lg hover:bg-slate-800 transition-colors shadow-sm">
+                            View Details
+                        </button>
+                    </section>
                 </div>
             </div>
         </main>
@@ -76,6 +95,31 @@
                 <a class="text-[10px] uppercase tracking-widest text-slate-400 hover:text-slate-900 font-bold" href="#">Security</a>
             </div>
         </footer>
+    </div>
+
+    <!-- Nominee Modal -->
+    <div id="nominee-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="document.getElementById('nominee-modal').classList.add('hidden')"></div>
+        
+        <!-- Modal Content -->
+        <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl z-10 overflow-hidden flex flex-col max-h-[85vh]">
+            <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-violet-100 text-violet-600 rounded-lg flex items-center justify-center">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">family_restroom</span>
+                    </div>
+                    <h3 class="font-bold text-slate-900 tracking-tight text-lg">Nominee Policies</h3>
+                </div>
+                <button onclick="document.getElementById('nominee-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 w-8 h-8 rounded-full flex items-center justify-center transition-colors">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">close</span>
+                </button>
+            </div>
+            
+            <div id="dash-nominee-container" class="p-6 overflow-y-auto space-y-4 bg-slate-50/30 flex-1">
+                <!-- Dynamic nominee policies injected here -->
+            </div>
+        </div>
     </div>
 
     <script src="../js/global.js"></script>
