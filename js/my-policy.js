@@ -17,19 +17,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         el('mp-title').textContent = policy.plan_name || (policy.type.charAt(0).toUpperCase() + policy.type.slice(1) + ' Plan');
         el('mp-policy-no').textContent = policy.policy_number;
 
-        // Status badge
-        const statusEl = el('mp-status');
-        const statusText = policy.status.replace('_', ' ');
-        if (policy.status === 'active') {
-            statusEl.textContent = '● Active';
-            statusEl.className = 'self-start md:self-end bg-green-50 text-green-700 text-[9px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-md border border-green-100';
-        } else if (policy.status === 'expired') {
-            statusEl.textContent = '● Expired';
-            statusEl.className = 'self-start md:self-end bg-red-50 text-red-700 text-[9px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-md border border-red-100';
-        } else {
-            statusEl.textContent = '● ' + statusText;
-            statusEl.className = 'self-start md:self-end bg-amber-50 text-amber-700 text-[9px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-md border border-amber-100';
-        }
+        // Status badge — override DB status if expiry date has already passed
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // strip time for a clean date comparison
+        const expiryDate = new Date(policy.end_date);
+        expiryDate.setHours(0, 0, 0, 0);
+
+        const effectiveStatus = (policy.status === 'active' && expiryDate < today)
+            ? 'expired'
+            : policy.status;
+
+            const statusEl = el('mp-status');
+            const statusText = effectiveStatus.replace('_', ' ');
+            if (effectiveStatus === 'active') {
+                statusEl.textContent = '● Active';
+                statusEl.className = 'self-start md:self-end bg-green-50 text-green-700 text-[9px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-md border border-green-100';
+            } else if (effectiveStatus === 'expired') {
+                statusEl.textContent = '● Expired';
+                statusEl.className = 'self-start md:self-end bg-red-50 text-red-700 text-[9px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-md border border-red-100';
+            } else {
+                statusEl.textContent = '● ' + statusText;
+                statusEl.className = 'self-start md:self-end bg-amber-50 text-amber-700 text-[9px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-md border border-amber-100';
+            }
+
 
         // --- Overview Stats ---
         el('mp-sum').textContent = '₹' + Number(policy.sum_insured).toLocaleString();
