@@ -1,4 +1,4 @@
-USE dbms_project;
+ USE dbms_project;
 
 -- Clear existing data to avoid conflicts
 DELETE FROM policy_details;
