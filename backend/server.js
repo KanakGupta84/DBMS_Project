@@ -208,9 +208,12 @@ app.post('/api/my-policies', async (req, res) => {
         // Generate a unique policy number
         const policyNumber = 'IW-' + Date.now().toString(36).toUpperCase();
         
-        // Set dates: start today, end 1 year from now
+        // Set dates: start today, never ends, customer can decide till when they want policy
         const startDate = new Date().toISOString().split('T')[0];
-        const endDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        const { end_date } = req.body;
+        if (!end_date) {
+            return res.status(400).json({ error: 'End date required' });
+        }
 
         const [result] = await db.query(
             "INSERT INTO policies (policy_number, user_id, plan_id, type, provider_name, sum_insured, premium_amount, start_date, end_date, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')",
@@ -296,9 +299,16 @@ app.get('/api/my-policies', async (req, res) => {
         }
         
         query += ` GROUP BY p.id ORDER BY p.start_date DESC`;
-        
-        const [rows] = await db.query(query, queryParams);
-        res.json(rows);
+
+        // Auto-expire any policies past their end_date before returning
+        const today = new Date().toISOString().split('T')[0];
+        await db.query(
+            `UPDATE policies SET status = 'expired' WHERE user_id = ? AND status = 'active' AND end_date < ?`,
+            [user_id, today]
+        );
+
+        const [updatedRows] = await db.query(query, queryParams);
+        res.json(updatedRows);
     } catch (err) {
         res.status(500).json({ error: 'Database error' });
     }
@@ -446,6 +456,12 @@ app.get('/api/my-policies/:id', async (req, res) => {
         `, [policyId, user_id]);
 
         if (!policy) return res.status(404).json({ error: 'Policy not found' });
+
+        // Auto-expire if past end_date
+        if (policy.status === 'active' && new Date(policy.end_date) < new Date()) {
+            await db.query('UPDATE policies SET status = ? WHERE id = ?', ['expired', policyId]);
+            policy.status = 'expired';
+        }
 
         // Fetch type-specific details
         const [details] = await db.query('SELECT * FROM policy_details WHERE policy_id = ?', [policyId]);

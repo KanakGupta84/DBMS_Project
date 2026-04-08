@@ -165,3 +165,6 @@ BEGIN
 END;
 //
 DELIMITER ;
+
+USE dbms_project;
+UPDATE policies SET status = 'expired' WHERE end_date < CURDATE() AND status != 'expired';
