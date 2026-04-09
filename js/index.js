@@ -124,6 +124,73 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Load nominee policies for dashboard summary + modal
+    const loadNomineePolicies = async () => {
+        const container = document.getElementById('dash-nominee-container');
+        const summary   = document.getElementById('dash-nominee-summary');
+        if (!container || !summary) return;
+
+        try {
+            const res = await fetch(`http://localhost:3000/api/my-nominee-policies?user_id=${user.id}`);
+            if (!res.ok) throw new Error('Failed');
+            const policies = await res.json();
+
+            // Update sidebar summary count
+            summary.innerHTML = `<p class="text-2xl font-black text-slate-900 tracking-tight">${policies.length} <span class="text-sm text-slate-500 font-medium tracking-normal">policies</span></p>`;
+
+            if (policies.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white border border-slate-200 rounded-xl px-4 py-8 text-center shadow-sm">
+                        <div class="w-12 h-12 bg-slate-50 mx-auto rounded-full flex items-center justify-center mb-3">
+                            <span class="material-symbols-outlined text-slate-300" style="font-size:24px">family_restroom</span>
+                        </div>
+                        <p class="text-sm text-slate-500 font-medium">You are not listed as a nominee<br>in any active life policy.</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = policies.map(p => {
+                const statusColor = p.status === 'active' ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                                  : p.status === 'expired' ? 'text-slate-500 bg-slate-100 border-slate-200'
+                                  : 'text-amber-700 bg-amber-50 border-amber-200';
+                const endDate = new Date(p.end_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+                return `
+                <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:border-violet-300 hover:shadow-md transition-all group">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-violet-50 text-violet-500 flex items-center justify-center border border-violet-100">
+                                <span class="material-symbols-outlined" style="font-size:16px;">family_restroom</span>
+                            </div>
+                            <p class="text-sm font-bold text-slate-900 leading-tight group-hover:text-violet-700 transition-colors">${p.plan_name}</p>
+                        </div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border ${statusColor}">${p.status.replace('_', ' ')}</span>
+                    </div>
+                    
+                    <div class="bg-slate-50 rounded-lg p-3 grid grid-cols-2 gap-2 mb-2">
+                        <div>
+                            <p class="text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-0.5">Policyholder</p>
+                            <p class="text-xs font-semibold text-slate-800">${p.policy_holder_name}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-0.5">Your Relation</p>
+                            <p class="text-xs font-semibold text-slate-800 capitalize">${p.nominee_relation || '—'}</p>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center px-1">
+                        <p class="text-[10px] text-slate-400 font-medium">Valid till: <span class="text-slate-600">${endDate}</span></p>
+                        <p class="text-[10px] text-slate-400 font-medium">Sum: <span class="text-slate-600 font-bold">${p.coverage_limit}</span></p>
+                    </div>
+                </div>`;
+            }).join('');
+
+        } catch {
+            summary.innerHTML = '<p class="text-sm text-red-500 font-medium">Error loading data.</p>';
+            container.innerHTML = '<p class="text-xs text-red-500 py-2">Could not load nominee data.</p>';
+        }
+    };
+
     loadDashPolicies();
     loadDashClaims();
+    loadNomineePolicies();
 });

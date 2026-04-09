@@ -246,9 +246,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="px-5 py-3 bg-slate-50 border-t border-slate-100 flex gap-3">
                         <button onclick="window.location.href='new-claim.html'" class="flex-1 py-2 bg-slate-900 text-white text-xs font-bold uppercase tracking-wider rounded-lg hover:bg-slate-800 shadow-sm transition-all">File Claim</button>
-                        <a href="feedback.html?policy_id=${policy.plan_id}&name=${encodeURIComponent(policy.plan_name || policy.type + ' Plan')}" class="w-10 py-2 bg-white text-amber-500 border border-slate-200 rounded-lg hover:bg-amber-50 shadow-sm transition-all flex items-center justify-center" title="Rate this policy">
+                        <button onclick="openReviewModal(${policy.plan_id}, '${(policy.plan_name || policy.type + ' Plan').replace(/'/g, "\\'")}')" class="w-10 py-2 bg-white text-amber-500 border border-slate-200 rounded-lg hover:bg-amber-50 shadow-sm transition-all flex items-center justify-center" title="Rate this policy">
                             <span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
-                        </a>
+                        </button>
                         <button onclick="removePolicy(${policy.id})" class="flex-1 py-2 bg-white text-red-500 border border-red-200 text-xs font-bold uppercase tracking-wider rounded-lg hover:bg-red-50 shadow-sm transition-all">Remove</button>
                     </div>
                 </div>
@@ -312,6 +312,119 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Review Modal Logic
+    let currentRating = 0;
+
+    window.openReviewModal = async (planId, planName) => {
+        document.getElementById('review-plan-id').value = planId;
+        document.getElementById('review-plan-name').textContent = planName;
+        document.getElementById('review-text').value = '';
+        setRating(0);
+        document.getElementById('review-submit-btn').querySelector('span').textContent = 'Submit Review';
+
+        const modal = document.getElementById('review-modal');
+        const content = document.getElementById('review-modal-content');
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            content.classList.remove('scale-95');
+        }, 10);
+
+        try {
+            const res = await fetch(`http://localhost:3000/api/feedback/me?user_id=${user.id}&plan_id=${planId}`);
+            if (res.ok) {
+                const data = await res.json();
+                if (data) {
+                    setRating(data.rating);
+                    document.getElementById('review-text').value = data.feedback_text;
+                    document.getElementById('review-submit-btn').querySelector('span').textContent = 'Update Review';
+                }
+            }
+        } catch (e) { console.error('Failed to fetch existing review', e); }
+    };
+
+    window.closeReviewModal = () => {
+        const modal = document.getElementById('review-modal');
+        const content = document.getElementById('review-modal-content');
+        modal.classList.add('opacity-0');
+        content.classList.add('scale-95');
+        setTimeout(() => modal.classList.add('hidden'), 300);
+    };
+
+    window.setRating = (rating) => {
+        currentRating = rating;
+        document.getElementById('review-rating').value = rating;
+        renderStars();
+    }
+
+    const renderStars = () => {
+        const container = document.getElementById('star-container');
+        if (!container) return;
+        container.innerHTML = '';
+        for (let i = 1; i <= 5; i++) {
+            const filled = i <= currentRating;
+            container.innerHTML += `
+                <button type="button" onclick="setRating(${i})" onmouseenter="highlightStars(${i})" onmouseleave="renderStars()" class="focus:outline-none transition-transform hover:scale-110 p-1">
+                    <span class="material-symbols-outlined text-4xl ${filled ? 'text-amber-400 drop-shadow-sm' : 'text-slate-200'}" style="font-variation-settings: 'FILL' ${filled ? 1 : 0};">star</span>
+                </button>
+            `;
+        }
+    };
+
+    window.highlightStars = (rating) => {
+        const container = document.getElementById('star-container');
+        if (!container) return;
+        const buttons = container.querySelectorAll('button span');
+        buttons.forEach((span, i) => {
+            if (i < rating) {
+                span.className = "material-symbols-outlined text-4xl text-amber-300";
+                span.style.fontVariationSettings = "'FILL' 1";
+            } else {
+                const isCurrentFilled = (i < currentRating);
+                span.className = `material-symbols-outlined text-4xl ${isCurrentFilled ? 'text-amber-400 drop-shadow-sm' : 'text-slate-200'}`;
+                span.style.fontVariationSettings = `'FILL' ${isCurrentFilled ? 1 : 0}`;
+            }
+        });
+    };
+
+    document.getElementById('review-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const planId = document.getElementById('review-plan-id').value;
+        const text = document.getElementById('review-text').value;
+
+        if (!currentRating) {
+            alert('Please select a star rating first.');
+            return;
+        }
+
+        const btn = document.getElementById('review-submit-btn');
+        const spinner = document.getElementById('review-spinner');
+        btn.disabled = true;
+        spinner.classList.remove('hidden');
+
+        try {
+            const res = await fetch('http://localhost:3000/api/feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: user.id, plan_id: planId, rating: currentRating, feedbackText: text })
+            });
+
+            if (res.ok) {
+                closeReviewModal();
+            } else {
+                const data = await res.json();
+                alert(data.error || 'Failed to save review');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Network error while saving review');
+        } finally {
+            btn.disabled = false;
+            spinner.classList.add('hidden');
+        }
+    });
+
+    renderStars(); // initial render
     loadStats();
     loadMyPolicies();
 });

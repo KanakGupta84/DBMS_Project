@@ -72,49 +72,44 @@ app.post('/api/auth/login', async (req, res) => {
 
 // 5. Plans: Get all plans (with avg rating and pagination)
 app.get('/api/plans', async (req, res) => {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 4;
+    const page   = parseInt(req.query.page)  || 1;
+    const limit  = parseInt(req.query.limit) || 4;
     const search = req.query.search || '';
+    const type   = req.query.type   || '';
     const offset = (page - 1) * limit;
-    
+
     try {
-        let query = `
-            SELECT 
-                p.*,
-                COALESCE(AVG(f.rating), 0) as avg_rating,
-                COUNT(f.id) as feedback_count
-            FROM insurance_plans p
-            LEFT JOIN policy_feedback f ON p.id = f.plan_id
-        `;
-        let queryParams = [];
+        const conditions  = [];
+        const baseParams  = [];
 
         if (search) {
-            query += ` WHERE p.name LIKE ? OR p.provider_name LIKE ? OR p.type LIKE ?`;
-            queryParams.push(`%${search}%`, `%${search}%`, `%${search}%`);
+            conditions.push(`(p.name LIKE ? OR p.provider_name LIKE ? OR p.type LIKE ?)`);
+            baseParams.push(`%${search}%`, `%${search}%`, `%${search}%`);
+        }
+        if (type) {
+            conditions.push(`p.type = ?`);
+            baseParams.push(type);
         }
 
-        query += ` GROUP BY p.id ORDER BY p.created_at DESC LIMIT ? OFFSET ?`;
-        queryParams.push(limit, offset);
-        
-        const [rows] = await db.query(query, queryParams);
-        
-        let countQuery = "SELECT COUNT(*) as total FROM insurance_plans p";
-        let countParams = [];
-        if (search) {
-            countQuery += ` WHERE p.name LIKE ? OR p.provider_name LIKE ? OR p.type LIKE ?`;
-            countParams.push(`%${search}%`, `%${search}%`, `%${search}%`);
-        }
-        
-        const [[{ total }]] = await db.query(countQuery, countParams);
-        
+        const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
+
+        const [rows] = await db.query(
+            `SELECT p.*, COALESCE(AVG(f.rating), 0) as avg_rating, COUNT(f.id) as feedback_count
+             FROM insurance_plans p
+             LEFT JOIN policy_feedback f ON p.id = f.plan_id
+             ${where}
+             GROUP BY p.id ORDER BY p.created_at DESC LIMIT ? OFFSET ?`,
+            [...baseParams, limit, offset]
+        );
+
+        const [[{ total }]] = await db.query(
+            `SELECT COUNT(*) as total FROM insurance_plans p ${where}`,
+            baseParams
+        );
+
         res.json({
             plans: rows,
-            pagination: {
-                total,
-                page,
-                limit,
-                totalPages: Math.ceil(total / limit)
-            }
+            pagination: { total, page, limit, totalPages: Math.ceil(total / limit) }
         });
     } catch (err) {
         console.error(err);
@@ -124,16 +119,22 @@ app.get('/api/plans', async (req, res) => {
 
 // 6. Plans: Create a new plan (Admin)
 app.post('/api/admin/plans', async (req, res) => {
-    const { name, type, provider_name, description, coverage_limit, network, premium_amount, icon_type } = req.body;
+    const { name, type, provider_name, description, coverage_limit, network, premium_amount, icon_type, duration_days, renew_warning_days } = req.body;
     
     if (!name || !type || !premium_amount) {
         return res.status(400).json({ error: 'Required fields missing' });
     }
 
+    const dDays = duration_days ? parseInt(duration_days) : 365;
+    const rwDays = renew_warning_days !== undefined ? parseInt(renew_warning_days) : 30;
+    
+    if (dDays <= 0) return res.status(400).json({ error: 'Duration must be greater than 0.' });
+    if (rwDays < 0 || rwDays >= dDays) return res.status(400).json({ error: 'Renew warning must be >= 0 and less than duration.' });
+
     try {
         const [result] = await db.query(
-            "INSERT INTO insurance_plans (name, type, provider_name, description, coverage_limit, network, premium_amount, icon_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-            [name, type, provider_name || 'Generic Provider', description || '', coverage_limit || '', network || '', premium_amount, icon_type || 'shield']
+            "INSERT INTO insurance_plans (name, type, provider_name, description, coverage_limit, network, premium_amount, icon_type, duration_days, renew_warning_days) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            [name, type, provider_name || 'Generic Provider', description || '', coverage_limit || '', network || '', premium_amount, icon_type || 'shield', dDays, rwDays]
         );
         res.status(201).json({ message: 'Plan added', planId: result.insertId });
     } catch (err) {
@@ -142,7 +143,49 @@ app.post('/api/admin/plans', async (req, res) => {
     }
 });
 
-// 7. Feedback: Add new feedback
+// Admin: List all plans with active policy counts
+app.get('/api/admin/plans', async (req, res) => {
+    try {
+        const [rows] = await db.query(`
+            SELECT ip.*,
+                   COUNT(CASE WHEN p.status IN ('active', 'renew_soon') THEN 1 END) AS active_count,
+                   COUNT(p.id) AS total_policy_count
+            FROM insurance_plans ip
+            LEFT JOIN policies p ON ip.id = p.plan_id
+            GROUP BY ip.id
+            ORDER BY ip.type, ip.name
+        `);
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+
+// Admin: Delete a plan (blocked if any active/renew_soon policies)
+app.delete('/api/admin/plans/:id', async (req, res) => {
+    const planId = req.params.id;
+    try {
+        const [[{ active_count }]] = await db.query(
+            `SELECT COUNT(*) AS active_count FROM policies
+             WHERE plan_id = ? AND status IN ('active', 'renew_soon')`,
+            [planId]
+        );
+        if (active_count > 0) {
+            return res.status(409).json({
+                error: `Cannot remove: ${active_count} active ${active_count === 1 ? 'policy is' : 'policies are'} currently using this plan.`
+            });
+        }
+        const [result] = await db.query('DELETE FROM insurance_plans WHERE id = ?', [planId]);
+        if (result.affectedRows === 0) return res.status(404).json({ error: 'Plan not found.' });
+        res.json({ message: 'Plan removed successfully.' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+
+// 7. Feedback: Add new feedback (UPSERT for single user-plan review)
 app.post('/api/feedback', async (req, res) => {
     const { plan_id, rating, feedbackText, userId } = req.body;
     
@@ -151,11 +194,21 @@ app.post('/api/feedback', async (req, res) => {
     }
 
     try {
-        await db.query(
-            "INSERT INTO policy_feedback (user_id, plan_id, rating, feedback_text) VALUES (?, ?, ?, ?)",
-            [userId, plan_id, rating, feedbackText]
-        );
-        res.status(201).json({ message: 'Feedback added' });
+        const [existing] = await db.query("SELECT id FROM policy_feedback WHERE user_id = ? AND plan_id = ?", [userId, plan_id]);
+        
+        if (existing.length > 0) {
+            await db.query(
+                "UPDATE policy_feedback SET rating = ?, feedback_text = ?, created_at = CURRENT_TIMESTAMP WHERE id = ?",
+                [rating, feedbackText, existing[0].id]
+            );
+            res.status(200).json({ message: 'Feedback updated' });
+        } else {
+            await db.query(
+                "INSERT INTO policy_feedback (user_id, plan_id, rating, feedback_text) VALUES (?, ?, ?, ?)",
+                [userId, plan_id, rating, feedbackText]
+            );
+            res.status(201).json({ message: 'Feedback added' });
+        }
     } catch (err) {
         console.error(err);
         if (err.code === 'ER_NO_REFERENCED_ROW_2') {
@@ -163,6 +216,24 @@ app.post('/api/feedback', async (req, res) => {
         } else {
             res.status(500).json({ error: 'Database error' });
         }
+    }
+});
+
+// 7b. Feedback: Get a specific user's feedback for a plan
+app.get('/api/feedback/me', async (req, res) => {
+    const { user_id, plan_id } = req.query;
+    if (!user_id || !plan_id) return res.status(400).json({ error: 'Missing parameters' });
+    
+    try {
+        const [rows] = await db.query(
+            "SELECT * FROM policy_feedback WHERE user_id = ? AND plan_id = ?",
+            [user_id, plan_id]
+        );
+        if (rows.length > 0) res.json(rows[0]);
+        else res.json(null);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Database error' });
     }
 });
 
@@ -186,34 +257,47 @@ app.get('/api/feedback', async (req, res) => {
 
 // 9. My Policies: Purchase a plan (Select Plan)
 app.post('/api/my-policies', async (req, res) => {
-    const { user_id, plan_id, details } = req.body;
-    
+    const { user_id, plan_id, details, force_motor } = req.body;
+
     if (!user_id || !plan_id) {
         return res.status(400).json({ error: 'user_id and plan_id are required' });
     }
 
     try {
-        // Check if user already owns this plan
-        const [existing] = await db.query(
-            "SELECT id FROM policies WHERE user_id = ? AND plan_id = ?", [user_id, plan_id]
-        );
-        if (existing.length > 0) {
-            return res.status(409).json({ error: 'You have already purchased this plan.' });
-        }
-
-        // Fetch the plan details from insurance_plans
+        // Fetch plan first so we know the type before duplicate checks
         const [[plan]] = await db.query("SELECT * FROM insurance_plans WHERE id = ?", [plan_id]);
         if (!plan) return res.status(404).json({ error: 'Plan not found' });
 
-        // Generate a unique policy number
-        const policyNumber = 'IW-' + Date.now().toString(36).toUpperCase();
-        
-        // Set dates: start today, never ends, customer can decide till when they want policy
-        const startDate = new Date().toISOString().split('T')[0];
-        const { end_date } = req.body;
-        if (!end_date) {
-            return res.status(400).json({ error: 'End date required' });
+        if (plan.type !== 'motor') {
+            // Non-motor: one policy per plan per user
+            const [existing] = await db.query(
+                "SELECT id FROM policies WHERE user_id = ? AND plan_id = ?", [user_id, plan_id]
+            );
+            if (existing.length > 0) {
+                return res.status(409).json({ error: 'You have already purchased this plan.' });
+            }
+        } else {
+            // Motor: allow multiple cars, but warn if same vehicle_number already covered
+            if (details && details.vehicle_number && !force_motor) {
+                const [vehExisting] = await db.query(
+                    `SELECT pd.id FROM policy_details pd
+                     JOIN policies p ON pd.policy_id = p.id
+                     WHERE p.user_id = ? AND pd.vehicle_number = ?`,
+                    [user_id, details.vehicle_number.trim().toUpperCase()]
+                );
+                if (vehExisting.length > 0) {
+                    return res.status(409).json({
+                        error: `Vehicle ${details.vehicle_number.toUpperCase()} is already insured under another policy.`,
+                        vehicle_duplicate: true
+                    });
+                }
+            }
         }
+
+        // Generate unique policy number; compute end_date from plan.duration_days
+        const policyNumber = 'IW-' + Date.now().toString(36).toUpperCase();
+        const startDate    = new Date().toISOString().split('T')[0];
+        const endDate      = new Date(Date.now() + plan.duration_days * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
         const [result] = await db.query(
             "INSERT INTO policies (policy_number, user_id, plan_id, type, provider_name, sum_insured, premium_amount, start_date, end_date, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')",
@@ -232,12 +316,12 @@ app.post('/api/my-policies', async (req, res) => {
             } else if (plan.type === 'motor') {
                 await db.query(
                     "INSERT INTO policy_details (policy_id, vehicle_number, vehicle_model, registration_year) VALUES (?, ?, ?, ?)",
-                    [policyId, details.vehicle_number, details.vehicle_model, details.registration_year]
+                    [policyId, (details.vehicle_number || '').toUpperCase(), details.vehicle_model, details.registration_year]
                 );
             } else if (plan.type === 'life') {
                 await db.query(
-                    "INSERT INTO policy_details (policy_id, nominee_name, nominee_relation, nominee_dob) VALUES (?, ?, ?, ?)",
-                    [policyId, details.nominee_name, details.nominee_relation, details.nominee_dob]
+                    "INSERT INTO policy_details (policy_id, nominee_name, nominee_relation, nominee_dob, nominee_user_id) VALUES (?, ?, ?, ?, ?)",
+                    [policyId, details.nominee_name, details.nominee_relation, details.nominee_dob, details.nominee_user_id || null]
                 );
             }
         }
@@ -303,8 +387,19 @@ app.get('/api/my-policies', async (req, res) => {
         // Auto-expire any policies past their end_date before returning
         const today = new Date().toISOString().split('T')[0];
         await db.query(
-            `UPDATE policies SET status = 'expired' WHERE user_id = ? AND status = 'active' AND end_date < ?`,
+            `UPDATE policies SET status = 'expired' WHERE user_id = ? AND status IN ('active', 'renew_soon') AND end_date < ?`,
             [user_id, today]
+        );
+
+        // Auto-renew_soon
+        await db.query(
+            `UPDATE policies p 
+             JOIN insurance_plans ip ON p.plan_id = ip.id 
+             SET p.status = 'renew_soon' 
+             WHERE p.user_id = ? AND p.status = 'active' 
+             AND DATEDIFF(p.end_date, CURRENT_DATE()) <= ip.renew_warning_days 
+             AND DATEDIFF(p.end_date, CURRENT_DATE()) >= 0`,
+            [user_id]
         );
 
         const [updatedRows] = await db.query(query, queryParams);
@@ -457,10 +552,21 @@ app.get('/api/my-policies/:id', async (req, res) => {
 
         if (!policy) return res.status(404).json({ error: 'Policy not found' });
 
-        // Auto-expire if past end_date
-        if (policy.status === 'active' && new Date(policy.end_date) < new Date()) {
-            await db.query('UPDATE policies SET status = ? WHERE id = ?', ['expired', policyId]);
-            policy.status = 'expired';
+        // Auto-expire or renew_soon if applicable
+        if (policy.status === 'active' || policy.status === 'renew_soon') {
+            const todayD = new Date().toISOString().split('T')[0];
+            if (new Date(policy.end_date) < new Date(todayD)) {
+                await db.query('UPDATE policies SET status = ? WHERE id = ?', ['expired', policyId]);
+                policy.status = 'expired';
+            } else if (policy.status === 'active') {
+                const [rwdRows] = await db.query('SELECT renew_warning_days FROM insurance_plans WHERE id = ?', [policy.plan_id]);
+                const warningDays = rwdRows.length ? rwdRows[0].renew_warning_days : 30;
+                const daysLeft = (new Date(policy.end_date) - new Date()) / (1000 * 60 * 60 * 24);
+                if (daysLeft <= warningDays && daysLeft >= 0) {
+                    await db.query('UPDATE policies SET status = ? WHERE id = ?', ['renew_soon', policyId]);
+                    policy.status = 'renew_soon';
+                }
+            }
         }
 
         // Fetch type-specific details
@@ -468,6 +574,48 @@ app.get('/api/my-policies/:id', async (req, res) => {
         policy.details = details.length > 0 ? details[0] : null;
 
         res.json(policy);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+
+// User search (for nominee account linking)
+app.get('/api/users/search', async (req, res) => {
+    const q = req.query.q || '';
+    if (q.trim().length < 2) return res.json([]);
+    try {
+        const [rows] = await db.query(
+            'SELECT id, full_name, email FROM users WHERE full_name LIKE ? OR email LIKE ? LIMIT 6',
+            [`%${q}%`, `%${q}%`]
+        );
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+
+// Nominee policies — life policies where the logged-in user is listed as nominee
+app.get('/api/my-nominee-policies', async (req, res) => {
+    const user_id = req.query.user_id;
+    if (!user_id) return res.status(400).json({ error: 'user_id required' });
+    try {
+        const [rows] = await db.query(`
+            SELECT
+                pd.nominee_name, pd.nominee_relation,
+                p.policy_number, p.premium_amount, p.start_date, p.end_date, p.status,
+                ip.name        AS plan_name,
+                ip.coverage_limit,
+                u.full_name    AS policy_holder_name
+            FROM policy_details pd
+            JOIN policies        p  ON pd.policy_id  = p.id
+            JOIN insurance_plans ip ON p.plan_id     = ip.id
+            JOIN users           u  ON p.user_id     = u.id
+            WHERE pd.nominee_user_id = ? AND p.type = 'life'
+            ORDER BY p.start_date DESC
+        `, [user_id]);
+        res.json(rows);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Database error' });
