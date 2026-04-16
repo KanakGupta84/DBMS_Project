@@ -64,7 +64,11 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span class="font-extrabold text-sm text-slate-900">${plan.name}</span>
                             <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">${plan.type}</span>
                         </div>
-                        <p class="text-xs text-slate-400 mb-2">${plan.provider_name} · ₹${parseFloat(plan.premium_amount).toLocaleString('en-IN')}/mo</p>
+                        <p class="text-xs text-slate-400 mb-2">
+                            ${plan.provider_name} · ₹${parseFloat(plan.premium_amount).toLocaleString('en-IN')}/mo 
+                            · ⭐ ${parseFloat(plan.avg_rating || 0).toFixed(1)} Rating
+                            · 👥 ${plan.total_policy_count || 0} Bought
+                        </p>
                         ${statusBadge}
                     </div>
                     <!-- Action -->

@@ -85,13 +85,9 @@
     padding: 2rem 0 2.5rem;
 }
 
-/* ── Colored Select button (outline style) ────────── */
-.btn-select-health  { color: #059669; border: 2px solid #059669; }
-.btn-select-health:hover  { background: #059669; color: #fff; }
-.btn-select-motor   { color: #2563EB; border: 2px solid #2563EB; }
-.btn-select-motor:hover   { background: #2563EB; color: #fff; }
-.btn-select-life    { color: #7C3AED; border: 2px solid #7C3AED; }
-.btn-select-life:hover    { background: #7C3AED; color: #fff; }
+/* ── Colored Select button (outline style neutralized) ────────── */
+.btn-select-health, .btn-select-motor, .btn-select-life  { color: #0f172a; border: 2px solid #E2E8F0; }
+.btn-select-health:hover, .btn-select-motor:hover, .btn-select-life:hover  { background: #F8FAFC; border-color: #0f172a; }
 
 /* ── Spin animation for loading ───────────────────── */
 @keyframes spin {

@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentType = 'all';
     let debounceTimer = null;
 
-    // ── Type config with subtle accent colors ────────────────────────────
+    // ── Type config with subtle accent colors (no side border) ───────────
     const TYPE_CONFIG = {
         health: {
             icon:        'medical_services',
@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
             iconBg:      'bg-emerald-50',
             iconColor:   'text-emerald-600',
             badge:       'bg-emerald-50 text-emerald-700 border border-emerald-100',
-            cardBorder:  'border-l-4 border-l-emerald-300',
+            cardBorder:  '',
             activeTab:   'bg-emerald-600 border-emerald-600 text-white shadow-emerald-200',
             starFull:    '#10b981',
             btnClass:    'border-emerald-600 text-emerald-600 hover:bg-emerald-600 hover:text-white'
@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
             iconBg:      'bg-blue-50',
             iconColor:   'text-blue-600',
             badge:       'bg-blue-50 text-blue-700 border border-blue-100',
-            cardBorder:  'border-l-4 border-l-blue-300',
+            cardBorder:  '',
             activeTab:   'bg-blue-600 border-blue-600 text-white shadow-blue-200',
             starFull:    '#3b82f6',
             btnClass:    'border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white'
@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
             iconBg:      'bg-violet-50',
             iconColor:   'text-violet-600',
             badge:       'bg-violet-50 text-violet-700 border border-violet-100',
-            cardBorder:  'border-l-4 border-l-violet-300',
+            cardBorder:  '',
             activeTab:   'bg-violet-600 border-violet-600 text-white shadow-violet-200',
             starFull:    '#8b5cf6',
             btnClass:    'border-violet-600 text-violet-600 hover:bg-violet-600 hover:text-white'

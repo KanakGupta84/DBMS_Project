@@ -148,11 +148,10 @@ app.get('/api/admin/plans', async (req, res) => {
     try {
         const [rows] = await db.query(`
             SELECT ip.*,
-                   COUNT(CASE WHEN p.status IN ('active', 'renew_soon') THEN 1 END) AS active_count,
-                   COUNT(p.id) AS total_policy_count
+                   (SELECT COUNT(*) FROM policies WHERE plan_id = ip.id AND status IN ('active', 'renew_soon')) AS active_count,
+                   (SELECT COUNT(*) FROM policies WHERE plan_id = ip.id) AS total_policy_count,
+                   (SELECT COALESCE(AVG(rating), 0) FROM policy_feedback WHERE plan_id = ip.id) AS avg_rating
             FROM insurance_plans ip
-            LEFT JOIN policies p ON ip.id = p.plan_id
-            GROUP BY ip.id
             ORDER BY ip.type, ip.name
         `);
         res.json(rows);
@@ -418,7 +417,7 @@ app.get('/api/my-claims', async (req, res) => {
 
     try {
         let query = `
-            SELECT c.*, p.type as policy_type, p.policy_number, p.provider_name as policy_provider
+            SELECT c.*, p.type as policy_type, p.policy_number, p.provider_name as policy_provider, p.sum_insured
             FROM claims c
             JOIN policies p ON c.policy_id = p.id
             WHERE c.user_id = ?
@@ -436,6 +435,39 @@ app.get('/api/my-claims', async (req, res) => {
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: 'Database error' });
+    }
+});
+
+// 10c. Check claim limits and partial status
+app.get('/api/policies/check-claim', async (req, res) => {
+    const { policy_number, user_id } = req.query;
+    if (!policy_number || !user_id) return res.status(400).json({ error: 'Missing parameters' });
+    
+    try {
+        const cleanPolicyNumber = policy_number.trim();
+        const [[policy]] = await db.query('SELECT id, sum_insured FROM policies WHERE policy_number = ? AND user_id = ?', [cleanPolicyNumber, user_id]);
+        
+        if (!policy) {
+            return res.status(404).json({ error: 'Policy not found or does not belong to you' });
+        }
+        
+        const [[{ used_amount }]] = await db.query(`
+            SELECT COALESCE(SUM(estimated_amount), 0) as used_amount 
+            FROM claims 
+            WHERE policy_id = ? AND status != 'declined'
+        `, [policy.id]);
+        
+        const remaining_amount = policy.sum_insured - used_amount;
+        
+        res.json({ 
+            policy_id: policy.id,
+            sum_insured: policy.sum_insured,
+            used_amount,
+            remaining_amount
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Database error while checking claim' });
     }
 });
 
@@ -457,13 +489,25 @@ app.post('/api/claims', async (req, res) => {
         const cleanPolicyNumber = policy_number.trim();
         console.log("Cleaned policy_number (trimmed):", `"${cleanPolicyNumber}"`);
 
-        const [[policy]] = await db.query('SELECT id FROM policies WHERE policy_number = ? AND user_id = ?', [cleanPolicyNumber, user_id]);
+        const [[policy]] = await db.query('SELECT id, sum_insured FROM policies WHERE policy_number = ? AND user_id = ?', [cleanPolicyNumber, user_id]);
         
         console.log("Database Query Policy Result:", policy);
         console.log("--------------------------------");
 
         if (!policy) {
             return res.status(404).json({ error: 'Policy not found or does not belong to you' });
+        }
+
+        const [[{ used_amount }]] = await db.query(`
+            SELECT COALESCE(SUM(estimated_amount), 0) as used_amount 
+            FROM claims 
+            WHERE policy_id = ? AND status != 'declined'
+        `, [policy.id]);
+
+        const remaining_amount = policy.sum_insured - used_amount;
+
+        if (amount > remaining_amount) {
+            return res.status(400).json({ error: `Claim amount exceeds the remaining sum insured. Maximum value you can claim is ₹${remaining_amount}.` });
         }
 
         // Generate a random Claim ID (e.g. #CLM-892341)

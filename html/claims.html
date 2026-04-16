@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@200;300;400&display=swap" rel="stylesheet"/>
     <link rel="stylesheet" href="../css/global.css"/>
     <link rel="stylesheet" href="../css/claims.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-slate-50 min-h-screen flex flex-col">
     <div id="global-header"></div>
@@ -52,6 +53,16 @@
                 </button>
             </div>
         </div>
+
+        <!-- Chart Section -->
+        <section class="animated-card bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden fade-in-up mb-8" style="animation-delay: 0.15s;">
+            <div class="px-6 py-5 border-b border-slate-200 bg-slate-50/50 flex items-center justify-between">
+                <h2 class="text-sm font-extrabold uppercase tracking-wide text-slate-700">Claim Trends</h2>
+            </div>
+            <div class="p-6">
+                <canvas id="claimsChart" style="width:100%; max-height: 250px;"></canvas>
+            </div>
+        </section>
 
         <!-- ClaimsTableContainer -->
         <section class="animated-card bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden fade-in-up" style="animation-delay: 0.2s;">

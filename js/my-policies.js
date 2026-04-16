@@ -245,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </div>
                     <div class="px-5 py-3 bg-slate-50 border-t border-slate-100 flex gap-3">
-                        <button onclick="window.location.href='new-claim.html'" class="flex-1 py-2 bg-slate-900 text-white text-xs font-bold uppercase tracking-wider rounded-lg hover:bg-slate-800 shadow-sm transition-all">File Claim</button>
+                        <button onclick="window.location.href='new-claim.html?policy=${policy.policy_number}'" class="flex-1 py-2 bg-slate-900 text-white text-xs font-bold uppercase tracking-wider rounded-lg hover:bg-slate-800 shadow-sm transition-all">File Claim</button>
                         <button onclick="openReviewModal(${policy.plan_id}, '${(policy.plan_name || policy.type + ' Plan').replace(/'/g, "\\'")}')" class="w-10 py-2 bg-white text-amber-500 border border-slate-200 rounded-lg hover:bg-amber-50 shadow-sm transition-all flex items-center justify-center" title="Rate this policy">
                             <span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
                         </button>

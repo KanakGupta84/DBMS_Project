@@ -86,10 +86,92 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
                 tableBody.innerHTML += rowHtml;
             });
+
+            // After populating table, render chart
+            renderChart(claims);
+
         } catch (err) {
             console.error(err);
             tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-10 text-red-500 font-bold">Failed to load from server.</td></tr>';
         }
+    };
+
+    let claimsChartInstance = null;
+
+    const renderChart = (claims) => {
+        const ctx = document.getElementById('claimsChart');
+        if (!ctx) return;
+
+        if (claimsChartInstance) {
+            claimsChartInstance.destroy();
+        }
+
+        if (claims.length === 0) {
+            return;
+        }
+
+        // Sort claims by filing date (oldest to newest)
+        const sortedClaims = [...claims].sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+        
+        const labels = sortedClaims.map(c => new Date(c.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }));
+        const data = sortedClaims.map(c => Number(c.estimated_amount));
+
+        claimsChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Claim Amount',
+                    data: data,
+                    borderColor: '#0f172a',
+                    backgroundColor: 'rgba(15, 23, 42, 0.1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#0f172a',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        titleFont: { size: 13, family: 'Inter' },
+                        bodyFont: { size: 12, family: 'Inter' },
+                        padding: 12,
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) {
+                                const claim = sortedClaims[context.dataIndex];
+                                // A claim is partial if the single claim amount is less than the total sum insured
+                                // Or more accurately, if multiple claims are allowed, check vs sum_insured
+                                const maxLimit = Number(claim.sum_insured) || 0;
+                                const amt = Number(claim.estimated_amount) || 0;
+                                const tName = (amt < maxLimit) ? 'Partial Claim' : 'Full Claim';
+                                return [
+                                    `Amount: ₹${context.raw.toLocaleString('en-IN')}`,
+                                    `Policy: ${claim.policy_number} (${claim.policy_type})`,
+                                    `Type: ${tName}`
+                                ];
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        grid: { color: '#f1f5f9' }, 
+                        ticks: { callback: function(value) { return '₹' + value.toLocaleString('en-IN'); } } 
+                    },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
     };
 
     // Search input logic (DB Search)
