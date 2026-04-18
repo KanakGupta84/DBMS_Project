@@ -47,13 +47,11 @@ dbms_project/
 │   ├── index.html          # Login / Sign-up page
 │   ├── dashboard.html      # Customer dashboard
 │   ├── policies.html       # Browse insurance plans
-│   ├── policy-details.html # Single plan detail view
 │   ├── my-policies.html    # User's purchased policies
 │   ├── my-policy.html      # Single policy detail
 │   ├── claims.html         # User's claims list
 │   ├── new-claim.html      # File a new claim (Step 1)
 │   ├── new-claim-step2.html# File a new claim (Step 2 - Bank details)
-│   ├── feedback.html       # Submit plan feedback
 │   ├── auth.html           # Auth page
 │   ├── profile.html        # User profile
 │   ├── admin-claims.html   # Admin: manage all claims
@@ -74,19 +72,20 @@ dbms_project/
 │   ├── auth.js             # Login / Register logic
 │   ├── index.js            # Dashboard logic
 │   ├── policies.js         # Plan browsing + search + pagination
-│   ├── policy-details.js   # Plan detail + purchase modal
 │   ├── my-policies.js      # User policies list
 │   ├── my-policy.js        # Single policy detail
 │   ├── claims.js           # Claims list
 │   ├── new-claim.js        # Claim filing (Step 1)
 │   ├── new-claim-step2.js  # Claim filing (Step 2)
-│   ├── feedback.js         # Feedback submission
 │   ├── admin-claims.js     # Admin claims management
 │   ├── admin-plans.js      # Admin plan management
 │   └── profile.js          # Profile page logic
 │
 ├── database.sql            # Full schema: tables, indexes, triggers
 ├── dummy_data.sql          # Sample seed data
+├── transactions.sql        # Database transactions examples
+├── update_trigger.js       # Trigger logic or utility script
+├── Documentation.md        # Additional project documentation
 ├── .env                    # Environment variables (not committed)
 └── .gitignore
 ```
@@ -108,8 +107,8 @@ The MySQL schema (`database.sql`) defines **7 tables** with proper foreign keys,
 | `policy_feedback`    | User ratings and reviews for plans           |
 
 ### Database Triggers
-1. **`trg_prevent_claim_on_expired_policy`** — Prevents filing claims on expired policies
-2. **`trg_validate_claim_amount`** — Ensures claim amount does not exceed the policy's sum insured
+1. **`trg_no_claim_on_expired`** — Prevents filing claims on expired policies
+2. **`trg_claim_within_limit`** — Ensures claim amount does not exceed the policy's sum insured
 
 ### Performance Indexes
 - Indexes on frequently filtered columns: `policies.type`, `claims.status`, `insurance_plans.type`
@@ -170,17 +169,23 @@ Open `html/index.html` in your browser to access the login page, or serve the fi
 | `POST`   | `/api/auth/register`            | Register a new user               |
 | `POST`   | `/api/auth/login`               | User login                        |
 | `GET`    | `/api/plans`                    | List all plans (paginated + search)|
+| `GET`    | `/api/admin/plans`              | List all plans (admin)            |
 | `POST`   | `/api/admin/plans`              | Add a new plan (admin)            |
+| `DELETE` | `/api/admin/plans/:id`          | Delete a plan (admin)             |
 | `POST`   | `/api/feedback`                 | Submit plan feedback              |
 | `GET`    | `/api/feedback`                 | Get feedback for a plan           |
+| `GET`    | `/api/feedback/me`              | Get a specific user's feedback    |
 | `POST`   | `/api/my-policies`              | Purchase a policy                 |
 | `GET`    | `/api/my-policies`              | Get user's policies               |
 | `GET`    | `/api/my-policies/:id`          | Get single policy details         |
 | `DELETE` | `/api/my-policies/:id`          | Cancel a policy                   |
+| `GET`    | `/api/policies/check-claim`     | Check claim limits                |
 | `POST`   | `/api/claims`                   | Submit a new claim                |
 | `GET`    | `/api/my-claims`                | Get user's claims                 |
 | `GET`    | `/api/admin/claims`             | Get all claims (admin)            |
 | `PUT`    | `/api/admin/claims/:id/status`  | Update claim status (admin)       |
+| `GET`    | `/api/users/search`             | User search for nominees          |
+| `GET`    | `/api/my-nominee-policies`      | Get policies where user is nominee|
 
 ---
 
